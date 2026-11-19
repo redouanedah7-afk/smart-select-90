@@ -19,8 +19,8 @@ def fetch_bball_games(api_key, date_str):
     return res.get("response", [])
 
 @st.cache_data(ttl=21600)
-def fetch_bball_last10(api_key, team_id,last_games):
-    url = f"https://v1.basketball.api-sports.io/games?team={team_id}, {last_games}"
+def fetch_bball_last10(api_key, team_id,season):
+    url = f"https://v1.basketball.api-sports.io/games?team={team_id}, {season}"
     headers = {"x-apisports-key": api_key}
     res = requests.get(url, headers=headers).json().get("response", [])
     finished = tuple(g for g in res if g.get("status", {}).get("short") in ("FT", "AOT"))
@@ -88,10 +88,10 @@ else:
                 a_id = game["teams"]["away"]["id"]
                 h_name = game["teams"]["home"]["name"]
                 a_name = game["teams"]["away"]["name"]
-                season = game["league"]["last games"]
+                season = game["league"]["season"]
 
-                h_pf, h_pa = fetch_bball_last10(api_key, h_id, last_games)
-                a_pf, a_pa = fetch_bball_last10(api_key, a_id, last_games)
+                h_pf, h_pa = fetch_bball_last10(api_key, h_id,season)
+                a_pf, a_pa = fetch_bball_last10(api_key, a_id,season)
 
                 data_ok = (len(h_pf) >= 5 and len(a_pf) >= 5)
                 if data_ok:
