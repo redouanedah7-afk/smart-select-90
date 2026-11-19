@@ -63,7 +63,7 @@ def weighted_avg(goals_list):
 
 # --- دوال الاتصال بـ API-Football ---
 @st.cache_data(ttl=1800)
-def fetch_fixtures(api_key, date_str):
+def fetch_fixtures(api_key, date_str): 
     url = f"https://api-sports.io{date_str}"
     headers = {"x-apisports-key": api_key}
     r = requests.get(url, headers=headers).json()
@@ -103,6 +103,7 @@ def fetch_odds_and_injuries(api_key, fixture_id):
     except Exception:
         pass
     inj_res = requests.get(f"https://api-sports.io{fixture_id}", headers=headers).json()
+
     injuries = [f"{i['player']['name']} ({i['team']['name']})" for i in inj_res.get("response", [])]
     return o1, ox, o2, injuries
 
