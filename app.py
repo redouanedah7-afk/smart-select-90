@@ -328,7 +328,7 @@ else:
                         if tactical_alert:
                             reasons.append("وجود غيابات مؤثرة (4+)")
                         st.warning(f"⚠️ **تنبيه الفلتر النهائي:** يُنصح بالحذر بسبب ({' ، '.join(reasons)}).")
-                                st.divider()
+                        st.divider()
         st.subheader("🧭 خلاصة المؤشر الإحصائي الأكثر ثباتاً")
         best_market = []
         if not tarot_conflict and not tactical_alert and data_ok:
