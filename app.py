@@ -328,3 +328,26 @@ else:
                         if tactical_alert:
                             reasons.append("وجود غيابات مؤثرة (4+)")
                         st.warning(f"⚠️ **تنبيه الفلتر النهائي:** يُنصح بالحذر بسبب ({' ، '.join(reasons)}).")
+                                st.divider()
+        st.subheader("🧭 خلاصة المؤشر الإحصائي الأكثر ثباتاً")
+        best_market = []
+        if not tarot_conflict and not tactical_alert and data_ok:
+            if p1 >= 55:
+                best_market.append(f"أفضلية واضحة لصاحب الأرض: **فوز {h_name} ({p1}%)**")
+            elif p2 >= 55:
+                best_market.append(f"أفضلية واضحة للضيف: **فوز {a_name} ({p2}%)**")
+        if over25 >= 68:
+            best_market.append(f"مؤشر الأهداف مرتفع جداً: **أكثر من 2.5 هدف ({over25}%)**")
+        elif over25 <= 35:
+            best_market.append(f"مؤشر التحفظ الدفاعي قوي: **أقل من 2.5 هدف ({round(100 - over25, 1)}%)**")
+        if btts >= 68:
+            best_market.append(f"توازن هجومي للطرفين: **تسجيل كلا الفريقين BTTS ({btts}%)**")
+
+        if best_market:
+            for item in best_market:
+                st.info(f"📌 {item}")
+            if tarot_conflict:
+                st.caption("ملاحظة: تم استبعاد ترجيح الفائز (1X2) تلقائياً بسبب تعارض قراءة المسار.")
+        else:
+            st.caption("ℹ️ لا يوجد مؤشر إحصائي طاغٍ في هذه المباراة؛ يُفضل متابعة مباريات أخرى.")
+
