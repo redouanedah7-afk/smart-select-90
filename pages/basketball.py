@@ -19,24 +19,25 @@ def fetch_bball_games(api_key, date_str):
     return res.get("response", [])
 
 
-def fetch_bball_last10(api_key, team_id, season):
-    headers = {"x-apisports-key": api_key}
-    url = f"https://v1.basketball.api-sports.io/games?team={team_id}&season=2026-2027"
-    data = requests.get(url, headers=headers).json()
-    st.write("API:", data.get("errors"), len(data.get("response", [])))
-    res = data.get("response", [])
-    finished = tuple(g for g in res if g.get("status", {}).get("short") in ("FT", "AOT"))
-
-
-
+@st.cache_data(ttl=21600)
+def fetch_bball_last10(team_name):
+    s_url = f"https://thesportsdb.com/api/v1/json/3/searchteams.php?t={team_name}"
+    teams = requests.get(s_url).json().get("teams") or []
+    b_teams = [t for t in teams if t.get("strSport") == "Basketball"]
+    if not b_teams:
+        return [], []
+    tid = b_teams[0]["idTeam"]
+    l_url = f"https://thesportsdb.com/api/v1/json/3/eventslast.php?id={tid}"
+    events = requests.get(l_url).json().get("results") or []
     pts_for, pts_ag = [], []
-    for g in finished[-10:]:
-        is_home = (g["teams"]["home"]["id"] == team_id)
-        hs = g["scores"]["home"]["total"] or 0
-        as_ = g["scores"]["away"]["total"] or 0
-        pts_for.append(hs if is_home else as_)
-        pts_ag.append(as_ if is_home else hs)
+    for e in events:
+        if e.get("intHomeScore") is not None and e.get("intAwayScore") is not None:
+            hs, as_ = int(e["intHomeScore"]), int(e["intAwayScore"])
+            is_home = (str(e.get("idHomeTeam")) == str(tid))
+            pts_for.append(hs if is_home else as_)
+            pts_ag.append(as_ if is_home else hs)
     return pts_for, pts_ag
+
 
 def tarot_bball_reading(h_name, a_name, date_str):
     cards = (
