@@ -79,7 +79,7 @@ def fetch_team_last10(api_key, team_id):
     base = "https://v3.football.api-sports.io"
     headers = {"x-apisports-key": api_key}
     gf, ga = [], []
-    for yr in:[2026,2025,2024]
+    for yr in [2026,2025,2024]:
         url = f"{base}/fixtures?team={team_id}&season={yr}&status=FT"
         r = requests.get(url, headers=headers).json().get("response", [])
         if r:
