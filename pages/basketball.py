@@ -24,6 +24,7 @@ def fetch_bball_last10(api_key, team_id,season):
     headers = {"x-apisports-key": api_key}
     res = requests.get(url, headers=headers).json().get("response", [])
     finished = tuple(g for g in res if g.get("status", {}).get("short") == "FT")
+    st.write("TEST:", season, len(res), len(finished))
 
     pts_for, pts_ag = [], []
     for g in finished[-10:]:
