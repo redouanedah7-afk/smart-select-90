@@ -3,56 +3,63 @@ import streamlit as st
 import requests
 import numpy as np
 from scipy.stats import norm
+from datetime import datetime, timedelta
 
 st.set_page_config(page_title="الانتقاء الذكي 90 - كرة السلة", page_icon="🏀", layout="wide")
-st.title("🏀 الانتقاء الذكي 90 — تحليل كرة السلة")
+st.title("🏀 الانتقاء الذكي 90 – تحليل كرة السلة")
 
 @st.cache_data(ttl=3600)
 def fetch_bball_games(api_key, date_str):
     url = f"https://v1.basketball.api-sports.io/games?date={date_str}"
-
     headers = {"x-apisports-key": api_key}
-    res = requests.get(url, headers=headers).json()
-    if res.get("errors"):
-        st.error(res["errors"])
+    try:
+        res = requests.get(url, headers=headers, timeout=15).json()
+        if res.get("errors"):
+            return []
+        return res.get("response", [])
+    except Exception:
         return []
-    return res.get("response", [])
-
 
 @st.cache_data(ttl=21600)
-def fetch_bball_last10(team_name):
-    s_url = f"https://thesportsdb.com/api/v1/json/3/searchteams.php?t={team_name}"
-    teams = requests.get(s_url).json().get("teams") or []
-    b_teams = [t for t in teams if t.get("strSport") == "Basketball"]
-    if not b_teams:
-        return [], []
-    tid = b_teams[0]["idTeam"]
-    l_url = f"https://thesportsdb.com/api/v1/json/3/eventslast.php?id={tid}"
-    events = requests.get(l_url).json().get("results") or []
+def fetch_bball_recent(api_key, team_id, base_date_str):
+    headers = {"x-apisports-key": api_key}
+    base_dt = datetime.strptime(base_date_str, "%Y-%m-%d")
     pts_for, pts_ag = [], []
-    for e in events:
-        if e.get("intHomeScore") is not None and e.get("intAwayScore") is not None:
-            hs, as_ = int(e["intHomeScore"]), int(e["intAwayScore"])
-            is_home = (str(e.get("idHomeTeam")) == str(tid))
-            pts_for.append(hs if is_home else as_)
-            pts_ag.append(as_ if is_home else hs)
+    for d in range(1, 16):
+        day_str = (base_dt - timedelta(days=d)).strftime("%Y-%m-%d")
+        url = f"https://v1.basketball.api-sports.io/games?date={day_str}"
+        try:
+            games = requests.get(url, headers=headers, timeout=10).json().get("response", [])
+            for g in games:
+                if g.get("status", {}).get("short") in ("FT", "AOT"):
+                    hid = g["teams"]["home"]["id"]
+                    aid = g["teams"]["away"]["id"]
+                    if hid == team_id or aid == team_id:
+                        hs = g["scores"]["home"]["total"] or 0
+                        as_ = g["scores"]["away"]["total"] or 0
+                        is_home = (hid == team_id)
+                        pts_for.append(hs if is_home else as_)
+                        pts_ag.append(as_ if is_home else hs)
+            if len(pts_for) >= 5:
+                break
+        except Exception:
+            continue
     return pts_for, pts_ag
-
 
 def tarot_bball_reading(h_name, a_name, date_str):
     cards = (
-        ("الشمس (XIX)", "إيقاع هجومي مرتفع وتسجيل غزير", "open"),
-        ("البرج (XVI)", "تراجع دفاعي مفاجئ وانهيار في الربع الأخير", "volatile"),
-        ("الاعتدال (XIV)", "توازن في الأداء وتقارب كبير في النقاط", "balanced"),
-        ("العربة (VII)", "اندفاع هجومي قوي وسيطرة تحت السلة", "open"),
-        ("الناسك (IX)", "لعب بطيء وتحفظ دفاعي يقلل النقاط", "closed"),
-        ("القمر (XVIII)", "تقلبات غير متوقعة في الربع الرابع", "volatile"),
+        ("الشمس (XIX)", "open", "إيقاع هجومي مرتفع وتسجيل غزير"),
+        ("البرج (XVI)", "volatile", "تراجع دفاعي مفاجئ وانهيار في الربع الأخير"),
+        ("الاعتدال (XIV)", "balanced", "توازن في الأداء وتقارب كبير في النقاط"),
+        ("العربة (VII)", "open", "اندفاع هجومي قوي وسيطرة تحت السلة"),
+        ("الناسك (IX)", "closed", "لعب بطيء وتحفظ دفاعي يقلل النقاط"),
+        ("القمر (XVIII)", "volatile", "تقلبات غير متوقعة في الربع الرابع"),
     )
     seed = sum(ord(c) for c in f"{h_name}{a_name}{date_str}")
     c_h = cards[seed % len(cards)]
     c_a = cards[(seed * 3 + 1) % len(cards)]
     c_m = cards[(seed * 7 + 2) % len(cards)]
-    conflict = (c_m[2] == "volatile") or (c_h[2] != c_a[2] and c_m[2] == "closed")
+    conflict = (c_m[1] == "volatile") or (c_h[1] != c_a[1] and c_m[1] == "closed")
     return c_h, c_a, c_m, conflict
 
 with st.sidebar:
@@ -94,14 +101,14 @@ else:
                 a_id = game["teams"]["away"]["id"]
                 h_name = game["teams"]["home"]["name"]
                 a_name = game["teams"]["away"]["name"]
-                season = game["league"]["season"]
 
-                h_pf, h_pa = fetch_bball_last10(h_name)
-                a_pf, a_pa = fetch_bball_last10(a_name)
+                with st.spinner("جاري تحليل آخر مباريات الفريقين في 2026..."):
+                    h_pf, h_pa = fetch_bball_recent(api_key, h_id, str(selected_date))
+                    a_pf, a_pa = fetch_bball_recent(api_key, a_id, str(selected_date))
 
                 data_ok = (len(h_pf) >= 1 and len(a_pf) >= 1)
                 if data_ok:
-                    exp_h = (np.mean(h_pf) + np.mean(a_pa)) / 2 + 2.5
+                    exp_h = (np.mean(h_pf) + np.mean(a_pa)) / 2
                     exp_a = (np.mean(a_pf) + np.mean(h_pa)) / 2
                 else:
                     exp_h, exp_a = 108.0, 105.0
@@ -114,22 +121,22 @@ else:
                 c_h, c_a, c_m, tarot_conflict = tarot_bball_reading(h_name, a_name, str(selected_date))
 
                 st.subheader("🔮 قراءة مسار المباراة (التاروت)")
-                st.info(f"**🏠 {h_name}:** {c_h[0]} — {c_h[1]}\n\n**✈️ {a_name}:** {c_a[0]} — {c_a[1]}\n\n**⚖️ مسار اللقاء:** {c_m[0]} — {c_m[1]}")
+                st.info(f"**🏠 {h_name}:** {c_h[0]} – {c_h[2]} | **✈️ {a_name}:** {c_a[0]} – {c_a[2]} | **⚖️ المسار:** {c_m[0]} ({c_m[2]})")
 
                 st.divider()
                 st.subheader("📊 التوقعات الإحصائية (التوزيع الطبيعي)")
                 c1, c2, c3 = st.columns(3)
-                c1.metric(f"فوز {h_name}", f"{win_prob_h}%", f"{exp_h:.1f} نقطة")
-                c2.metric(f"فوز {a_name}", f"{win_prob_a}%", f"{exp_a:.1f} نقطة")
-                c3.metric("المجموع المتوقع (Total)", f"{exp_total:.1f} نقطة", f"فارق: {diff:+.1f}")
+                c1.metric(f"فوز {h_name}", f"{win_prob_h}%", f"{round(exp_h, 1)} نقطة")
+                c2.metric(f"فوز {a_name}", f"{win_prob_a}%", f"{round(exp_a, 1)} نقطة")
+                c3.metric("المجموع المتوقع (Total)", f"{round(exp_total, 1)} نقطة")
 
                 st.divider()
                 if data_ok and not tarot_conflict:
-                    st.success("✅ **قرار الفلتر النهائي:** المباراة مطابقة لشروط الانتقاء الذكي 90.")
+                    st.success("✅ **الفلتر النهائي:** المباراة مطابقة لشروط الانتقاء الذكي 90")
                 else:
                     reasons = []
                     if not data_ok:
-                        reasons.append("نقص بيانات آخر 10 مباريات")
+                        reasons.append("نقص بيانات المباريات الأخيرة")
                     if tarot_conflict:
                         reasons.append("تعارض/تقلب في قراءة المسار")
-                    st.warning(f"⚠️ **تنبيه الفلتر النهائي:** يُنصح بالحذر بسبب ({' ، '.join(reasons)}).")
+                    st.warning(f"⚠️ **الفلتر النهائي:** يُنصح بالحذر بسبب ({' + '.join(reasons)})")
