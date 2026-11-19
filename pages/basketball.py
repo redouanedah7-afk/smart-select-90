@@ -96,8 +96,8 @@ else:
                 a_name = game["teams"]["away"]["name"]
                 season = game["league"]["season"]
 
-                h_pf, h_pa = fetch_bball_last10(api_key, h_id,season)
-                a_pf, a_pa = fetch_bball_last10(api_key, a_id,season)
+                h_pf, h_pa = fetch_bball_last10(h_name)
+                a_pf, a_pa = fetch_bball_last10(a_name)
 
                 data_ok = (len(h_pf) >= 1 and len(a_pf) >= 1)
                 if data_ok:
