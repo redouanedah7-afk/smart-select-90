@@ -121,7 +121,9 @@ def fetch_odds_and_injuries(api_key, fixture_id):
     return o1, ox, o2, injuries
 
 # --- الواجهة الرئيسية ---
-api_key = st.text_input("🔑 الصق مفتاح API-Football المجاني هنا:", type="password")
+default_key = st.secrets.get("API_FOOTBALL_KEY", "")
+api_key = st.text_input("🔑 مفتاح API-Football (محفوظ تلقائياً)", value=default_key, type="password")
+
 
 if api_key:
     selected_date = st.date_input("📅 اختر تاريخ المباريات:", datetime.today())
@@ -146,6 +148,25 @@ if api_key:
             }
             chosen_label = st.selectbox("اختر المباراة للتحليل:", list(options.keys()))
             match_data = options[chosen_label]
+            if st.button("🟢 فحص سريع وعرض المباريات الخضراء فقط (أول 3 مباريات)"):
+                        green_list = []
+                        with st.spinner("جاري فحص المباريات ومطابقتها مع شروط الانتقاء الذكي 90..."):
+                for item_lbl, item_m in list(options.items())[:3]:
+                    fid_t = item_m["fixture"]["id"]
+                    hid_t = item_m["teams"]["home"]["id"]
+                    aid_t = item_m["teams"]["away"]["id"]
+                    hgf_t, hga_t = fetch_team_last10(api_key, hid_t)
+                    agf_t, aga_t = fetch_team_last10(api_key, aid_t)
+                    _, _, _, inj_t = fetch_odds_and_injuries(api_key, fid_t)
+                    if len(hgf_t) >= 5 and len(agf_t) >= 5 and len(inj_t) < 4:
+                        green_list.append(item_lbl)
+            if green_list:
+                st.success(f"✅ تم العثور على {len(green_list)} مباراة مطابقة للشروط:")
+                for g_m in green_list:
+                    st.write(f"- **{g_m}**")
+            else:
+                st.warning("⚠️ لم تطابق أي مباراة من المجموعة المفحوصة جميع الشروط.")
+
 
             if st.button("🚀 تشغيل التحليل التلقائي والفلتر النهائي", type="primary", use_container_width=True):
                 with st.spinner("جاري سحب آخر 10 مباريات، الاحتمالات، الغيابات، وحساب المصفوفة..."):
