@@ -161,11 +161,11 @@ if api_key:
                         if len(hgf_t) >= 5 and len(agf_t) >= 5 and len(inj_t) < 4:
                             green_list.append(item_lbl)
                 if green_list:
-                st.success(f"✅ تم العثور على {len(green_list)} مباراة مطابقة للشروط:")
-                for g_m in green_list:
+                    st.success(f"✅ تم العثور على {len(green_list)} مباراة مطابقة للشروط:")
+                    for g_m in green_list:
                     st.write(f"- **{g_m}**")
                 else:
-                st.warning("⚠️ لم تطابق أي مباراة من المجموعة المفحوصة جميع الشروط.")
+                    st.warning("⚠️ لم تطابق أي مباراة من المجموعة المفحوصة جميع الشروط.")
 
 
             if st.button("🚀 تشغيل التحليل التلقائي والفلتر النهائي", type="primary", use_container_width=True):
