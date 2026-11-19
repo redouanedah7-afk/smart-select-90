@@ -77,18 +77,21 @@ def fetch_fixtures(api_key, date_str):
 @st.cache_data(ttl=3600)
 def fetch_team_last10(api_key, team_id):
     base = "https://v3.football.api-sports.io"
-    url = f"{base}/fixtures?team={team_id}&last=10"
-
     headers = {"x-apisports-key": api_key}
-    r = requests.get(url, headers=headers).json()
     gf, ga = [], []
-    for m in reversed(r.get("response", [])):
-        is_home = (m["teams"]["home"]["id"] == team_id)
-        gh = m["goals"]["home"] or 0
-        ga_val = m["goals"]["away"] or 0
-        gf.append(gh if is_home else ga_val)
-        ga.append(ga_val if is_home else gh)
-    return gf, ga
+    for yr in:[2026،2025،2024]
+        url = f"{base}/fixtures?team={team_id}&season={yr}&status=FT"
+        r = requests.get(url, headers=headers).json().get("response", [])
+        if r:
+            for m in r[-10:]:
+                is_home = (m["teams"]["home"]["id"] == team_id)
+                gh = m["goals"]["home"] or 0
+                ga_val = m["goals"]["away"] or 0
+                gf.append(gh if is_home else ga_val)
+                ga.append(ga_val if is_home else gh)
+            break
+    return gf[-10:], ga[-10:]
+
 
 @st.cache_data(ttl=1800)
 def fetch_odds_and_injuries(api_key, fixture_id):
