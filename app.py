@@ -163,7 +163,7 @@ if api_key:
                 if green_list:
                     st.success(f"✅ تم العثور على {len(green_list)} مباراة مطابقة للشروط:")
                     for g_m in green_list:
-                    st.write(f"- **{g_m}**")
+                        st.write(f"- **{g_m}**")
                 else:
                     st.warning("⚠️ لم تطابق أي مباراة من المجموعة المفحوصة جميع الشروط.")
 
