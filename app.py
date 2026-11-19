@@ -47,10 +47,12 @@ TAROT_DECK = [
     ("اثنان من العملات", "محاولة الحفاظ على التوازن وتسيير النتيجة", True),
     ("سبعة الكؤوس", "إهدار فرص سهلة وتسرع أمام المرمى", True)
 ]
-
 def draw_card(seed_text):
     idx = int(hashlib.sha256(seed_text.encode()).hexdigest(), 16) % len(TAROT_DECK)
-    return TAROT_DECK[idx]
+    card_name, card_desc, is_risk = TAROT_DECK[idx]
+    return f"{card_name} ({card_desc})", is_risk
+
+
 
 def weighted_avg(goals_str):
     nums = [float(x.strip()) for x in goals_str.split(",") if x.strip()]
