@@ -67,7 +67,7 @@ def fetch_fixtures(api_key, date_str):
     base = "https://v3.football.api-sports.io"
     
     url = f"{base}/fixtures?date={date_str}"
-        headers = {"x-apisports-key": api_key}
+    headers = {"x-apisports-key": api_key}
     r = requests.get(url, headers=headers).json()
     if r.get("errors"):
         st.error(r["errors"])
