@@ -34,7 +34,8 @@ MAJOR_ARCANA = [
 def get_ruling_card(city, dt):
     seed = f"{city.strip().lower()}_{dt.strip()}"
     idx = int(hashlib.sha256(seed.encode()).hexdigest(), 16) % 22
-    risk_cards =
+    risk_cards = [0, 10, 16, 18]
+
     return MAJOR_ARCANA[idx], (idx in risk_cards)
 
 def weighted_avg(goals_str):
