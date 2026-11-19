@@ -21,7 +21,7 @@ def fetch_bball_games(api_key, date_str):
 
 def fetch_bball_last10(api_key, team_id, season):
     headers = {"x-apisports-key": api_key}
-    url = f"https://v1.basketball.api-sports.io/games?team={team_id}"
+    url = f"https://v1.basketball.api-sports.io/games?team={team_id}&season=2026-2027"
     data = requests.get(url, headers=headers).json()
     st.write("API:", data.get("errors"), len(data.get("response", [])))
     res = data.get("response", [])
