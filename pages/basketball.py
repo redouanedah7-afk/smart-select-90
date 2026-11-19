@@ -21,13 +21,12 @@ def fetch_bball_games(api_key, date_str):
 
 def fetch_bball_last10(api_key, team_id, season):
     headers = {"x-apisports-key": api_key}
-    res = []
-    for s in [str(season), f"{season}-{int(season)+1}", f"{int(season)-1}-{season}"]:
-        url = f"https://v1.basketball.api-sports.io/games?team={team_id}&season={s}"
-        res = requests.get(url, headers=headers).json().get("response", [])
-        if res:
-            break
+    url = f"https://v1.basketball.api-sports.io/games?team={team_id}"
+    data = requests.get(url, headers=headers).json()
+    st.write("API:", data.get("errors"), len(data.get("response", [])))
+    res = data.get("response", [])
     finished = tuple(g for g in res if g.get("status", {}).get("short") in ("FT", "AOT"))
+
 
 
     pts_for, pts_ag = [], []
