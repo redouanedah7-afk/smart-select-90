@@ -9,7 +9,7 @@ st.title("🏀 الانتقاء الذكي 90 — تحليل كرة السلة")
 
 @st.cache_data(ttl=3600)
 def fetch_bball_games(api_key, date_str):
-        url = f"https://v1.basketball.api-sports.io/games?date={date_str}"
+    url = f"https://v1.basketball.api-sports.io/games?date={date_str}"
 
     headers = {"x-apisports-key": api_key}
     res = requests.get(url, headers=headers).json()
