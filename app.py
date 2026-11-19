@@ -64,14 +64,18 @@ def weighted_avg(goals_list):
 # --- دوال الاتصال بـ API-Football ---
 @st.cache_data(ttl=1800)
 def fetch_fixtures(api_key, date_str): 
-    url = f"https://api-sports.io{date_str}"
+     base = "https://v3.football.api-sports.io"
+    
+    url = f"{base}/fixtures?date={date_str}"
     headers = {"x-apisports-key": api_key}
     r = requests.get(url, headers=headers).json()
     return r.get("response", [])
 
 @st.cache_data(ttl=3600)
 def fetch_team_last10(api_key, team_id):
-    url = f"https://api-sports.io{team_id}&last=10&status=FT"
+     base = "https://v3.football.api-sports.io"
+    url = f"{base}/fixtures?team={team_id}&last=10"
+
     headers = {"x-apisports-key": api_key}
     r = requests.get(url, headers=headers).json()
     gf, ga = [], []
@@ -86,7 +90,8 @@ def fetch_team_last10(api_key, team_id):
 @st.cache_data(ttl=1800)
 def fetch_odds_and_injuries(api_key, fixture_id):
     headers = {"x-apisports-key": api_key}
-    odds_res = requests.get(f"https://api-sports.io{fixture_id}", headers=headers).json()
+    base = "https://v3.football.api-sports.io"
+    odds_res = requests.get(f"{base}/odds?fixture={fixture_id}", headers=headers).json()
     o1, ox, o2 = 2.50, 3.20, 2.80
     try:
         bets = odds_res["response"]["bookmakers"]["bets"]
@@ -102,7 +107,7 @@ def fetch_odds_and_injuries(api_key, fixture_id):
                 break
     except Exception:
         pass
-    inj_res = requests.get(f"https://api-sports.io{fixture_id}", headers=headers).json()
+    inj_res = requests.get(f"https://v3.football.api-sports.io{fixture_id}", headers=headers).json()
 
     injuries = [f"{i['player']['name']} ({i['team']['name']})" for i in inj_res.get("response", [])]
     return o1, ox, o2, injuries
