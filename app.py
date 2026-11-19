@@ -167,6 +167,8 @@ if api_key:
                     # الطبقة 01 و 03
                     lam_h = ((weighted_avg(h_gf) + weighted_avg(a_ga)) / 2) * 1.08
                     lam_a = (weighted_avg(a_gf) + weighted_avg(h_ga)) / 2
+                    if h_gf and np.mean(h_gf) >= 1.4:
+                        lam_h = lam_h * 1.15
 
                     matrix = np.zeros((9, 9))
                     rho = -0.13
