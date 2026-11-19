@@ -121,7 +121,7 @@ def fetch_odds_and_injuries(api_key, fixture_id):
     return o1, ox, o2, injuries
 
 # --- الواجهة الرئيسية المنظمة ---
-st.markdown("<style>.stApp { direction: rtl; text-align: right; }</style>", unsafe_allow_html=True)
+
 
 with st.sidebar:
     st.header("⚙️ إعدادات البيانات")
