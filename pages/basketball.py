@@ -94,7 +94,7 @@ else:
                 h_pf, h_pa = fetch_bball_last10(api_key, h_id,season)
                 a_pf, a_pa = fetch_bball_last10(api_key, a_id,season)
 
-                data_ok = (len(h_pf) >= 5 and len(a_pf) >= 5)
+                data_ok = (len(h_pf) >= 1 and len(a_pf) >= 1)
                 if data_ok:
                     exp_h = (np.mean(h_pf) + np.mean(a_pa)) / 2 + 2.5
                     exp_a = (np.mean(a_pf) + np.mean(h_pa)) / 2
