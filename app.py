@@ -120,37 +120,71 @@ def fetch_odds_and_injuries(api_key, fixture_id):
     injuries = [f"{i['player']['name']} ({i['team']['name']})" for i in inj_res.get("response", [])]
     return o1, ox, o2, injuries
 
-# --- الواجهة الرئيسية ---
-default_key = st.secrets.get("API_FOOTBALL_KEY", "")
-api_key = st.text_input("🔑 مفتاح API-Football (محفوظ تلقائياً)", value=default_key, type="password")
+# --- الواجهة الرئيسية المنظمة ---
+st.markdown("<style>.stApp { direction: rtl; text-align: right; }</style>", unsafe_allow_html=True)
 
-
-if api_key:
-    selected_date = st.date_input("📅 اختر تاريخ المباريات:", datetime.today())
-    if st.button("🔄 جلب مباريات هذا اليوم", use_container_width=True):
+with st.sidebar:
+    st.header("⚙️ إعدادات البيانات")
+    default_key = st.secrets.get("API_FOOTBALL_KEY", "")
+    api_key = st.text_input("🔑 مفتاح API-Football", value=default_key, type="password")
+    selected_date = st.date_input("📅 اختر تاريخ المباريات")
+    if api_key and st.button("🔄 جلب مباريات هذا اليوم", use_container_width=True):
         with st.spinner("جاري سحب المباريات من السيرفر..."):
-            st.session_state["fixtures"] = fetch_fixtures(api_key, selected_date.strftime("%Y-%m-%d"))
+            st.session_state["fixtures"] = fetch_fixtures(api_key, str(selected_date))
 
+if not api_key:
+    st.info("👈 افتح القائمة الجانبية من السهم في أعلى اليسار وأدخل مفتاح API-Football للبدء.")
+else:
     fixtures = st.session_state.get("fixtures", [])
-    if fixtures:
-        search_q = st.text_input("🔍 ابحث باسم الفريق أو الدوري (اختياري):")
-        filtered = [
-            f for f in fixtures
-            if not search_q or search_q.lower() in f["teams"]["home"]["name"].lower()
-            or search_q.lower() in f["teams"]["away"]["name"].lower()
-            or search_q.lower() in f["league"]["name"].lower()
-        ]
+    if not fixtures:
+        st.info("👈 افتح القائمة الجانبية واختر التاريخ ثم اضغط على **جلب مباريات هذا اليوم**.")
+    else:
+        # 1. تنظيم وترتيب الدوريات (الدوريات الكبرى أولاً)
+        major_keywords = ["UEFA", "Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1", "Pro League", "World Cup"]
+        leagues_count = {}
+        for f in fixtures:
+            l_title = f"{f['league']['country']} - {f['league']['name']}"
+            leagues_count[l_title] = leagues_count.get(l_title, 0) + 1
 
-        if filtered:
+        sorted_leagues = sorted(
+            leagues_count.keys(),
+            key=lambda x: (0 if any(k.lower() in x.lower() for k in major_keywords) else 1, x)
+        )
+        league_choices = [f"🌍 جميع الدوريات ({len(fixtures)} مباراة)"] + [f"{lg} ({leagues_count[lg]})" for lg in sorted_leagues]
+
+        col_lg, col_sr = st.columns([2, 1])
+        with col_lg:
+            chosen_lg_label = st.selectbox("🏆 اختر الدوري (مرتب حسب الأهمية):", league_choices)
+        with col_sr:
+            search_q = st.text_input("🔍 بحث باسم فريق:")
+
+        # 2. تصفية المباريات حسب الدوري والبحث
+        filtered = []
+        for f in fixtures:
+            l_title = f"{f['league']['country']} - {f['league']['name']}"
+            if not chosen_lg_label.startswith("🌍") and not chosen_lg_label.startswith(l_title):
+                continue
+            if search_q:
+                q = search_q.lower()
+                if q not in f["teams"]["home"]["name"].lower() and q not in f["teams"]["away"]["name"].lower():
+                    continue
+            filtered.append(f)
+
+        if not filtered:
+            st.warning("⚠️ لا توجد مباريات مطابقة لخيارات التصفية الحالية.")
+        else:
             options = {
-                f"{f['league']['country']} - {f['league']['name']} | {f['teams']['home']['name']} vs {f['teams']['away']['name']} ({f['fixture']['date'][11:16]})": f
+                f"{f['teams']['home']['name']} 🆚 {f['teams']['away']['name']} | ({f['league']['name']})": f
                 for f in filtered
             }
-            chosen_label = st.selectbox("اختر المباراة للتحليل:", list(options.keys()))
-            match_data = options[chosen_label]
-            if st.button("🟢 فحص سريع وعرض المباريات الخضراء فقط (أول 3 مباريات)"):
-                green_list = []
-                with st.spinner("جاري فحص المباريات ومطابقتها مع شروط الانتقاء الذكي 90..."):
+
+            tab_single, tab_scan = st.tabs(["📊 التحليل التفصيلي لمباراة", "🟢 الفحص السريع للمباريات الخضراء"])
+
+            with tab_scan:
+                st.caption("يفحص أول 3 مباريات من القائمة المفلترة أعلاه لتجنب تجاوز حد الباقة المجانية.")
+                if st.button("🚀 ابدأ الفحص السريع للدوري المختار", use_container_width=True):
+                    green_list = []
+                    with st.spinner("جاري فحص المباريات ومطابقتها مع شروط الانتقاء الذكي 90..."):
                         for item_lbl, item_m in list(options.items())[:3]:
                             fid_t = item_m["fixture"]["id"]
                             hid_t = item_m["teams"]["home"]["id"]
@@ -158,14 +192,18 @@ if api_key:
                             hgf_t, hga_t = fetch_team_last10(api_key, hid_t)
                             agf_t, aga_t = fetch_team_last10(api_key, aid_t)
                             _, _, _, inj_t = fetch_odds_and_injuries(api_key, fid_t)
-                        if len(hgf_t) >= 5 and len(agf_t) >= 5 and len(inj_t) < 4:
-                            green_list.append(item_lbl)
-                if green_list:
-                    st.success(f"✅ تم العثور على {len(green_list)} مباراة مطابقة للشروط:")
-                    for g_m in green_list:
-                        st.write(f"- **{g_m}**")
-                else:
-                    st.warning("⚠️ لم تطابق أي مباراة من المجموعة المفحوصة جميع الشروط.")
+                            if len(hgf_t) >= 5 and len(agf_t) >= 5 and len(inj_t) < 4:
+                                green_list.append(item_lbl)
+                    if green_list:
+                        st.success(f"✅ تم العثور على {len(green_list)} مباراة مطابقة للشروط:")
+                        for g_m in green_list:
+                            st.write(f"- **{g_m}**")
+                    else:
+                        st.warning("⚠️ لم تطابق أي مباراة من المجموعة المفحوصة جميع الشروط.")
+
+            
+            chosen_label = st.selectbox("⚽ اختر المباراة للتحليل:", list(options.keys()))
+            match_data = options[chosen_label]
 
 
             if st.button("🚀 تشغيل التحليل التلقائي والفلتر النهائي", type="primary", use_container_width=True):
