@@ -18,7 +18,7 @@ def fetch_bball_games(api_key, date_str):
         return []
     return res.get("response", [])
 
-@st.cache_data(ttl=21600)
+
 def fetch_bball_last10(api_key, team_id,season):
     url = f"https://v1.basketball.api-sports.io/games?team={team_id}&season={season}"
     headers = {"x-apisports-key": api_key}
