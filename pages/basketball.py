@@ -20,10 +20,11 @@ def fetch_bball_games(api_key, date_str):
 
 @st.cache_data(ttl=21600)
 def fetch_bball_last10(api_key, team_id,season):
-    url = f"https://v1.basketball.api-sports.io/games?team={team_id}, {season}"
+    url = f"https://v1.basketball.api-sports.io/games?team={team_id}&season={season}"
     headers = {"x-apisports-key": api_key}
     res = requests.get(url, headers=headers).json().get("response", [])
-    finished = tuple(g for g in res.get("response", []) if g.get("status", {}).get("short") in ("FT", "AOT"))
+    finished = tuple(g for g in res if g.get("status", {}).get("short") == "FT")
+
     pts_for, pts_ag = [], []
     for g in finished[-10:]:
         is_home = (g["teams"]["home"]["id"] == team_id)
