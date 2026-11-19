@@ -1,6 +1,5 @@
 import streamlit as st
 import numpy as np
-requests
 from scipy.stats import poisson
 import hashlib
 import requests
