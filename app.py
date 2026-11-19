@@ -149,8 +149,8 @@ if api_key:
             chosen_label = st.selectbox("اختر المباراة للتحليل:", list(options.keys()))
             match_data = options[chosen_label]
             if st.button("🟢 فحص سريع وعرض المباريات الخضراء فقط (أول 3 مباريات)"):
-                        green_list = []
-                        with st.spinner("جاري فحص المباريات ومطابقتها مع شروط الانتقاء الذكي 90..."):
+                green_list = []
+                with st.spinner("جاري فحص المباريات ومطابقتها مع شروط الانتقاء الذكي 90..."):
                 for item_lbl, item_m in list(options.items())[:3]:
                     fid_t = item_m["fixture"]["id"]
                     hid_t = item_m["teams"]["home"]["id"]
@@ -160,11 +160,11 @@ if api_key:
                     _, _, _, inj_t = fetch_odds_and_injuries(api_key, fid_t)
                     if len(hgf_t) >= 5 and len(agf_t) >= 5 and len(inj_t) < 4:
                         green_list.append(item_lbl)
-            if green_list:
+                if green_list:
                 st.success(f"✅ تم العثور على {len(green_list)} مباراة مطابقة للشروط:")
                 for g_m in green_list:
                     st.write(f"- **{g_m}**")
-            else:
+                else:
                 st.warning("⚠️ لم تطابق أي مباراة من المجموعة المفحوصة جميع الشروط.")
 
 
