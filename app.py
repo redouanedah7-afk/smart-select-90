@@ -221,3 +221,46 @@ if api_key:
 
                     st.subheader("📊 مسار النتيجة المباشرة (1X2)")
                     mc1, mc2, mc3 = st.columns(3)
+                    mc1.metric(f"فوز {h_name}", f"{p1}%", f"سوق: {m1}%")
+                    mc2.metric("التعادل (X)", f"{px}%", f"سوق: {mx}%")
+                    mc3.metric(f"فوز {a_name}", f"{p2}%", f"سوق: {m2}%")
+
+                    st.divider()
+                    st.subheader("📊 الإحصائيات المتوقعة (xG) وأداء الفريقين")
+                    sc1, sc2 = st.columns(2)
+                    with sc1:
+                        st.info(f"**🏠 {h_name}**\n- الأهداف المتوقعة (xG): **{lam_h:.2f}**\n- معدل التسجيل (آخر 10): **{np.mean(h_gf) if h_gf else 0:.2f}**\n- معدل الاستقبال (آخر 10): **{np.mean(h_ga) if h_ga else 0:.2f}**")
+                    with sc2:
+                        st.info(f"**✈️ {a_name}**\n- الأهداف المتوقعة (xG): **{lam_a:.2f}**\n- معدل التسجيل (آخر 10): **{np.mean(a_gf) if a_gf else 0:.2f}**\n- معدل الاستقبال (آخر 10): **{np.mean(a_ga) if a_ga else 0:.2f}**")
+
+                    # حساب أكثر 3 نتائج دقيقة احتمالاً من مصفوفة بواسون
+                    flat_idx = np.argsort(matrix.ravel())[::-1][:3]
+                    top_scores = [(idx // 9, idx % 9, round(matrix.ravel()[idx] * 100, 1)) for idx in flat_idx]
+                    best_h, best_a, best_prob = top_scores[0]
+
+                    # حساب احتمالات الأهداف (+2.5 و BTTS)
+                    over25 = round(sum(matrix[i, j] for i in range(9) for j in range(9) if i + j > 2) * 100, 1)
+                    btts = round(sum(matrix[i, j] for i in range(1, 9) for j in range(1, 9)) * 100, 1)
+
+                    st.divider()
+                    st.subheader("🎯 النتيجة النهائية المتوقعة والفلتر الذكي")
+                    rc1, rc2, rc3 = st.columns(3)
+                    rc1.metric("النتيجة الأقرب", f"{best_h} - {best_a}", f"احتمال {best_prob}%")
+                    rc2.metric("أكثر من 2.5 هدف", f"{over25}%")
+                    rc3.metric("كلا الفريقين يسجل (BTTS)", f"{btts}%")
+
+                    st.write("**أقوى 3 سيناريوهات للنتيجة الدقيقة:**")
+                    for s_h, s_a, s_p in top_scores:
+                        st.write(f"- **{h_name} {s_h} - {s_a} {a_name}** (بنسبة **{s_p}%**)")
+
+                    if data_ok and not tarot_conflict and not tactical_alert:
+                        st.success("✅ **قرار الفلتر النهائي:** المباراة مطابقة لشروط الانتقاء الذكي 90.")
+                    else:
+                        reasons = []
+                        if not data_ok:
+                                reasons.append("نقص بيانات آخر 10 مباريات")
+                        if tarot_conflict:
+                                reasons.append("تعارض في قراءة المسار")
+                        if tactical_alert:
+                            reasons.append("وجود غيابات مؤثرة (4+)")
+                        st.warning(f"⚠️ **تنبيه الفلتر النهائي:** يُنصح بالحذر بسبب ({' ، '.join(reasons)}).")
