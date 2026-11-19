@@ -110,7 +110,9 @@ def fetch_odds_and_injuries(api_key, fixture_id):
                 break
     except Exception:
         pass
-    inj_res = requests.get(f"https://v3.football.api-sports.io{fixture_id}", headers=headers).json()
+    url_inj = f"{base}/injuries?fixture={fixture_id}"
+    inj_res = requests.get(url_inj, headers=headers).json()
+
 
     injuries = [f"{i['player']['name']} ({i['team']['name']})" for i in inj_res.get("response", [])]
     return o1, ox, o2, injuries
