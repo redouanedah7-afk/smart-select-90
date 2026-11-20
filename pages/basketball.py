@@ -91,7 +91,7 @@ else:
             options = {f"{g['teams']['home']['name']} 🆚 {g['teams']['away']['name']} | ({g['league']['name']})": 
             g for g in filtered}
             lbl_match = "🎯 اختر المباراة:"
-         chosen_lbl = st.selectbox(lbl_match, list(options.keys()))
+            chosen_lbl = st.selectbox(lbl_match, list(options.keys()))
 
             game = options[chosen_lbl]
 
