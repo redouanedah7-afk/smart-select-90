@@ -106,7 +106,8 @@ else:
                     a_pf, a_pa = fetch_bball_recent(api_key, a_id, str(selected_date))
 
                 data_ok = (len(h_pf) >= 1 and len(a_pf) >= 1)
-                
+                data_ok = len(h_pf) > 0 and len(a_pf) > 0
+
                 c_h, c_a, c_m, tarot_conflict = tarot_bball_reading(h_name, a_name, str(selected_date))
 
                 st.subheader("🔮 قراءة مسار المباراة (التاروت)")
