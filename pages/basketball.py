@@ -115,7 +115,7 @@ else:
 
                 st.divider()
                 st.subheader("📊 التوقعات الإحصائية (التوزيع الطبيعي)")
-            if data_ok:
+                if data_ok:
                     exp_h = (np.mean(h_pf) + np.mean(a_pa)) / 2
                     exp_a = (np.mean(a_pf) + np.mean(h_pa)) / 2
                     exp_total = exp_h + exp_a
@@ -127,7 +127,7 @@ else:
                     c1.metric(f"فوز {h_name}", f"{win_prob_h}%", f"{round(exp_h, 1)} نقطة")
                     c2.metric(f"فوز {a_name}", f"{win_prob_a}%", f"{round(exp_a, 1)} نقطة")
                     c3.metric("المجموع المتوقع (Total)", f"{round(exp_total, 1)} نقطة")
-            else:
+                else:
                     st.warning("⚠️ لا توجد مباريات سابقة كافية لأحد الفريقين لحساب التوقع الإحصائي بدقة.")
 
                     st.divider()
