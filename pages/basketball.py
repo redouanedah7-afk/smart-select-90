@@ -24,11 +24,19 @@ def fetch_bball_games(api_key, date_str):
 def fetch_bball_recent(api_key, team_id, base_date_str):
     headers = {"x-apisports-key": api_key}
     base_dt = datetime.strptime(base_date_str, "%Y-%m-%d")
-    season = base_dt.year if base_dt.month >= 9 else base_dt.year - 1
-    url = f"https://v1.basketball.api-sports.io/games?team={team_id}&season={season}"
+    y = base_dt.year if base_dt.month >= 9 else base_dt.year - 1
+    seasons = [f"{y}-{y+1}", f"{y-1}-{y}", str(y), str(y-1)]
     pts_for, pts_ag = [], []
     try:
-        games = requests.get(url, headers=headers, timeout=15).json().get("response", [])
+        games = []
+        for s in seasons:
+            url = f"https://v1.basketball.api-sports.io/games?team={team_id}&season={s}"
+            res = requests.get(url, headers=headers, timeout=15).json().get("response", [])
+            if res:
+                games.extend(res)
+                if len(games) >= 10:
+                    break
+
         finished = [ g for g in games
             if g.get("status", {}).get("short") in ("FT", "AOT")
             and g.get("date", "")[:10] < base_date_st]
