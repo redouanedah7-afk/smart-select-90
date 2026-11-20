@@ -83,12 +83,13 @@ else:
         filtered = tuple(
             g for g in games
             if chosen_lg.startswith("🌍") or chosen_lg == f"{g['country']['name']} - {g['league']['name']}"
+        )
 
         if not filtered:
             st.warning("⚠️ لا توجد مباريات في هذه البطولة.")
         else:
-            options = {f"{g['teams']['home']['name']} 🆚 {g['teams']['away']['name']} | ({g['league']['name']})": g
-                for g in filtered}
+            options = {f"{g['teams']['home']['name']} 🆚 {g['teams']['away']['name']} | ({g['league']['name']})": 
+            g for g in filtered}
             chosen_lbl = st.selectbox("🏀 اختر المباراة:", list(options.keys())
             game = options[chosen_lbl]
 
