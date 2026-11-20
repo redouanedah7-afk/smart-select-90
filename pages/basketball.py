@@ -90,7 +90,9 @@ else:
         else:
             options = {f"{g['teams']['home']['name']} 🆚 {g['teams']['away']['name']} | ({g['league']['name']})": 
             g for g in filtered}
-            chosen_lbl = st.selectbox("🏀 اختر المباراة:", list(options.keys())
+               lbl_match = "🎯 اختر المباراة:"
+         chosen_lbl = st.selectbox(lbl_match, list(options.keys()))
+
             game = options[chosen_lbl]
 
             if st.button("🚀 تشغيل التحليل الذكي لكرة السلة", use_container_width=True):
