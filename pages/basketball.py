@@ -130,8 +130,8 @@ else:
                     st.warning("⚠️ لا توجد مباريات سابقة كافية لأحد الفريقين لحساب التوقع الإحصائي بدقة.")
 
                     st.divider()
-                if data_ok and not tarot_conflict:
-                    st.success("✅ **الفلتر النهائي:** المباراة مطابقة لشروط الانتقاء الذكي 90")
+                    if data_ok and not tarot_conflict:
+                        st.success("✅ **الفلتر النهائي:** المباراة مطابقة لشروط الانتقاء الذكي 90")
                 else:
                     reasons = []
                     if not data_ok:
