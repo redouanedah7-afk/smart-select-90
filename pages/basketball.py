@@ -110,7 +110,7 @@ else:
                 c_h, c_a, c_m, tarot_conflict = tarot_bball_reading(h_name, a_name, str(selected_date))
 
                 st.subheader("🔮 قراءة مسار المباراة (التاروت)")
-            st.info(f"**🏠 {h_name}:** {c_h[0]} — {c_h[2]}  |  **✈️ {a_name}:** {c_a[0]} — {c_a[2]}  |  **⚖️ المسار:** {c_m[0]} — {c_m[2]}")
+                st.info(f"**🏠 {h_name}:** {c_h[0]} — {c_h[2]}  |  **✈️ {a_name}:** {c_a[0]} — {c_a[2]}  |  **⚖️ المسار:** {c_m[0]} — {c_m[2]}")
 
                 st.divider()
                 st.subheader("📊 التوقعات الإحصائية (التوزيع الطبيعي)")
