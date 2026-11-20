@@ -24,27 +24,28 @@ def fetch_bball_games(api_key, date_str):
 def fetch_bball_recent(api_key, team_id, base_date_str):
     headers = {"x-apisports-key": api_key}
     base_dt = datetime.strptime(base_date_str, "%Y-%m-%d")
+    season = base_dt.year if base_dt.month >= 9 else base_dt.year - 1
+    url = f"https://v1.basketball.api-sports.io/games?team={team_id}&season={season}"
     pts_for, pts_ag = [], []
-    for d in range(1, 16):
-        day_str = (base_dt - timedelta(days=d)).strftime("%Y-%m-%d")
-        url = f"https://v1.basketball.api-sports.io/games?date={day_str}"
-        try:
-            games = requests.get(url, headers=headers, timeout=10).json().get("response", [])
-            for g in games:
-                if g.get("status", {}).get("short") in ("FT", "AOT"):
-                    hid = g["teams"]["home"]["id"]
-                    aid = g["teams"]["away"]["id"]
-                    if hid == team_id or aid == team_id:
-                        hs = g["scores"]["home"]["total"] or 0
-                        as_ = g["scores"]["away"]["total"] or 0
-                        is_home = (hid == team_id)
-                        pts_for.append(hs if is_home else as_)
-                        pts_ag.append(as_ if is_home else hs)
-            if len(pts_for) >= 5:
-                break
-        except Exception:
-            continue
+    try:
+        games = requests.get(url, headers=headers, timeout=15).json().get("response", [])
+        finished = [
+            g for g in games
+            if g.get("status", {}).get("short") in ("FT", "AOT")
+            and g.get("date", "")[:10] < base_date_str
+        ]
+        finished.sort(key=lambda x: x.get("date", ""), reverse=True)
+        for g in finished[:5]:
+            hid = g["teams"]["home"]["id"]
+            hs = int(g["scores"]["home"]["total"] or 0)
+            as_ = int(g["scores"]["away"]["total"] or 0)
+            is_home = (hid == team_id)
+            pts_for.append(hs if is_home else as_)
+            pts_ag.append(as_ if is_home else hs)
+    except Exception:
+        pass
     return pts_for, pts_ag
+
 
 def tarot_bball_reading(h_name, a_name, date_str):
     cards = (
@@ -93,7 +94,7 @@ else:
                 f"{g['teams']['home']['name']} 🆚 {g['teams']['away']['name']} | ({g['league']['name']})": g
                 for g in filtered
             }
-            chosen_lbl = st.selectbox("🏀 اختر المباراة:", list(options.keys()))
+            chosen_lbl = st.selectbox("🏀 اختر المباراة:", list(options.keys())
             game = options[chosen_lbl]
 
             if st.button("🚀 تشغيل التحليل الذكي لكرة السلة", use_container_width=True):
@@ -107,28 +108,28 @@ else:
                     a_pf, a_pa = fetch_bball_recent(api_key, a_id, str(selected_date))
 
                 data_ok = (len(h_pf) >= 1 and len(a_pf) >= 1)
-                if data_ok:
-                    exp_h = (np.mean(h_pf) + np.mean(a_pa)) / 2
-                    exp_a = (np.mean(a_pf) + np.mean(h_pa)) / 2
-                else:
-                    exp_h, exp_a = 108.0, 105.0
+                
+            c_h, c_a, c_m, tarot_conflict = tarot_bball_reading(h_name, a_name, str(selected_date))
 
+            st.subheader("🔮 قراءة مسار المباراة (التاروت)")
+            st.info(f"**🏠 {h_name}:** {c_h[0]} — {c_h[2]}  |  **✈️ {a_name}:** {c_a[0]} — {c_a[2]}  |  **⚖️ المسار:** {c_m[0]} — {c_m[2]}")
+
+            st.divider()
+            st.subheader("📊 التوقعات الإحصائية (التوزيع الطبيعي)")
+            if data_ok:
+                exp_h = (np.mean(h_pf) + np.mean(a_pa)) / 2
+                exp_a = (np.mean(a_pf) + np.mean(h_pa)) / 2
                 exp_total = exp_h + exp_a
                 diff = exp_h - exp_a
                 win_prob_h = round(norm.cdf(diff / 11.5) * 100, 1)
                 win_prob_a = round(100 - win_prob_h, 1)
 
-                c_h, c_a, c_m, tarot_conflict = tarot_bball_reading(h_name, a_name, str(selected_date))
-
-                st.subheader("🔮 قراءة مسار المباراة (التاروت)")
-                st.info(f"**🏠 {h_name}:** {c_h[0]} – {c_h[2]} | **✈️ {a_name}:** {c_a[0]} – {c_a[2]} | **⚖️ المسار:** {c_m[0]} ({c_m[2]})")
-
-                st.divider()
-                st.subheader("📊 التوقعات الإحصائية (التوزيع الطبيعي)")
                 c1, c2, c3 = st.columns(3)
                 c1.metric(f"فوز {h_name}", f"{win_prob_h}%", f"{round(exp_h, 1)} نقطة")
                 c2.metric(f"فوز {a_name}", f"{win_prob_a}%", f"{round(exp_a, 1)} نقطة")
                 c3.metric("المجموع المتوقع (Total)", f"{round(exp_total, 1)} نقطة")
+            else:
+                st.warning("⚠️ لا توجد مباريات سابقة كافية لأحد الفريقين لحساب التوقع الإحصائي بدقة.")
 
                 st.divider()
                 if data_ok and not tarot_conflict:
