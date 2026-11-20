@@ -29,11 +29,9 @@ def fetch_bball_recent(api_key, team_id, base_date_str):
     pts_for, pts_ag = [], []
     try:
         games = requests.get(url, headers=headers, timeout=15).json().get("response", [])
-        finished = [
-            g for g in games
+        finished = [ g for g in games
             if g.get("status", {}).get("short") in ("FT", "AOT")
-            and g.get("date", "")[:10] < base_date_str
-        ]
+            and g.get("date", "")[:10] < base_date_st]
         finished.sort(key=lambda x: x.get("date", ""), reverse=True)
         for g in finished[:5]:
             hid = g["teams"]["home"]["id"]
@@ -48,15 +46,14 @@ def fetch_bball_recent(api_key, team_id, base_date_str):
 
 
 def tarot_bball_reading(h_name, a_name, date_str):
-    cards = (
+    cards = 
         ("الشمس (XIX)", "open", "إيقاع هجومي مرتفع وتسجيل غزير"),
         ("البرج (XVI)", "volatile", "تراجع دفاعي مفاجئ وانهيار في الربع الأخير"),
         ("الاعتدال (XIV)", "balanced", "توازن في الأداء وتقارب كبير في النقاط"),
         ("العربة (VII)", "open", "اندفاع هجومي قوي وسيطرة تحت السلة"),
         ("الناسك (IX)", "closed", "لعب بطيء وتحفظ دفاعي يقلل النقاط"),
         ("القمر (XVIII)", "volatile", "تقلبات غير متوقعة في الربع الرابع"),
-    )
-    seed = sum(ord(c) for c in f"{h_name}{a_name}{date_str}")
+    seed = (sum(ord(c) for c in f"{h_name}{a_name}{date_str}")
     c_h = cards[seed % len(cards)]
     c_a = cards[(seed * 3 + 1) % len(cards)]
     c_m = cards[(seed * 7 + 2) % len(cards)]
@@ -85,15 +82,12 @@ else:
         filtered = tuple(
             g for g in games
             if chosen_lg.startswith("🌍") or chosen_lg == f"{g['country']['name']} - {g['league']['name']}"
-        )
 
         if not filtered:
             st.warning("⚠️ لا توجد مباريات في هذه البطولة.")
         else:
-            options = {
-                f"{g['teams']['home']['name']} 🆚 {g['teams']['away']['name']} | ({g['league']['name']})": g
-                for g in filtered
-            }
+            options = {f"{g['teams']['home']['name']} 🆚 {g['teams']['away']['name']} | ({g['league']['name']})": g
+                for g in filtered}
             chosen_lbl = st.selectbox("🏀 اختر المباراة:", list(options.keys())
             game = options[chosen_lbl]
 
