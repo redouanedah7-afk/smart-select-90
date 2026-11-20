@@ -54,7 +54,7 @@ def tarot_bball_reading(h_name, a_name, date_str):
         ("الناسك (IX)", "closed", "لعب بطيء وتحفظ دفاعي يقلل النقاط"),
         ("القمر (XVIII)", "volatile", "تقلبات غير متوقعة في الربع الرابع"),
     )
-    seed = (sum(ord(c) for c in f"{h_name}{a_name}{date_str}")
+    seed = (sum(ord(c) for c in f"{h_name}{a_name}{date_str}"))
     c_h = cards[seed % len(cards)]
     c_a = cards[(seed * 3 + 1) % len(cards)]
     c_m = cards[(seed * 7 + 2) % len(cards)]
