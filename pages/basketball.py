@@ -107,29 +107,29 @@ else:
 
                 data_ok = (len(h_pf) >= 1 and len(a_pf) >= 1)
                 
-            c_h, c_a, c_m, tarot_conflict = tarot_bball_reading(h_name, a_name, str(selected_date))
+                c_h, c_a, c_m, tarot_conflict = tarot_bball_reading(h_name, a_name, str(selected_date))
 
-            st.subheader("🔮 قراءة مسار المباراة (التاروت)")
+                st.subheader("🔮 قراءة مسار المباراة (التاروت)")
             st.info(f"**🏠 {h_name}:** {c_h[0]} — {c_h[2]}  |  **✈️ {a_name}:** {c_a[0]} — {c_a[2]}  |  **⚖️ المسار:** {c_m[0]} — {c_m[2]}")
 
-            st.divider()
-            st.subheader("📊 التوقعات الإحصائية (التوزيع الطبيعي)")
-            if data_ok:
-                exp_h = (np.mean(h_pf) + np.mean(a_pa)) / 2
-                exp_a = (np.mean(a_pf) + np.mean(h_pa)) / 2
-                exp_total = exp_h + exp_a
-                diff = exp_h - exp_a
-                win_prob_h = round(norm.cdf(diff / 11.5) * 100, 1)
-                win_prob_a = round(100 - win_prob_h, 1)
-
-                c1, c2, c3 = st.columns(3)
-                c1.metric(f"فوز {h_name}", f"{win_prob_h}%", f"{round(exp_h, 1)} نقطة")
-                c2.metric(f"فوز {a_name}", f"{win_prob_a}%", f"{round(exp_a, 1)} نقطة")
-                c3.metric("المجموع المتوقع (Total)", f"{round(exp_total, 1)} نقطة")
-            else:
-                st.warning("⚠️ لا توجد مباريات سابقة كافية لأحد الفريقين لحساب التوقع الإحصائي بدقة.")
-
                 st.divider()
+                st.subheader("📊 التوقعات الإحصائية (التوزيع الطبيعي)")
+            if data_ok:
+                    exp_h = (np.mean(h_pf) + np.mean(a_pa)) / 2
+                    exp_a = (np.mean(a_pf) + np.mean(h_pa)) / 2
+                    exp_total = exp_h + exp_a
+                    diff = exp_h - exp_a
+                    win_prob_h = round(norm.cdf(diff / 11.5) * 100, 1)
+                    win_prob_a = round(100 - win_prob_h, 1)
+
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric(f"فوز {h_name}", f"{win_prob_h}%", f"{round(exp_h, 1)} نقطة")
+                    c2.metric(f"فوز {a_name}", f"{win_prob_a}%", f"{round(exp_a, 1)} نقطة")
+                    c3.metric("المجموع المتوقع (Total)", f"{round(exp_total, 1)} نقطة")
+            else:
+                    st.warning("⚠️ لا توجد مباريات سابقة كافية لأحد الفريقين لحساب التوقع الإحصائي بدقة.")
+
+                    st.divider()
                 if data_ok and not tarot_conflict:
                     st.success("✅ **الفلتر النهائي:** المباراة مطابقة لشروط الانتقاء الذكي 90")
                 else:
