@@ -132,10 +132,10 @@ else:
                     st.divider()
                     if data_ok and not tarot_conflict:
                         st.success("✅ **الفلتر النهائي:** المباراة مطابقة لشروط الانتقاء الذكي 90")
-                else:
-                    reasons = []
+                    else:
+                        reasons = []
                     if not data_ok:
                         reasons.append("نقص بيانات المباريات الأخيرة")
                     if tarot_conflict:
                         reasons.append("تعارض/تقلب في قراءة المسار")
-                    st.warning(f"⚠️ **الفلتر النهائي:** يُنصح بالحذر بسبب ({' + '.join(reasons)})")
+                        st.warning(f"⚠️ **الفلتر النهائي:** يُنصح بالحذر بسبب ({' + '.join(reasons)})")
