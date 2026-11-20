@@ -89,7 +89,7 @@ else:
             st.warning("⚠️ لا توجد مباريات في هذه البطولة.")
         else:
             options = {f"{g['teams']['home']['name']} 🆚 {g['teams']['away']['name']} | ({g['league']['name']})": 
-            g for g in filtered}}
+            g for g in filtered}
             chosen_lbl = st.selectbox("🏀 اختر المباراة:", list(options.keys())
             game = options[chosen_lbl]
 
